@@ -1,0 +1,117 @@
+#: import ModifiedSlider modified_slider.ModifiedSlider
+
+<Container@FloatLayout>:
+    size_hint: None, None
+
+<ControlButton@Widget>:
+    size_hint: None, None
+
+<ModifiedSlider>
+    size_hint: None, None
+
+<AudioControls>:
+    size_hint_y: None
+    height: self.vertical_padding * 2 + self.button_height
+    duration: len(self.audio_chunks) * self.chunk_size if self.audio_chunks is not None else 0
+    seek_time: seek_slider.value
+    value_pos: seek_slider.value_pos
+    value_pos_norm: seek_slider.value_normalized
+    bar_start_x: seek_slider.x
+    bar_end_x: seek_slider.right
+
+    Container:
+        id: playback_controls_container
+        height: root.height - root.vertical_padding * 2
+        width: root.horizontal_padding + (root.button_width * 3 + root.element_spacing * 2) + (root.horizontal_padding / 2)
+        pos: root.x, root.y + root.vertical_padding
+
+        ControlButton:
+            id: play_button
+            size: root.button_width, root.button_height
+            pos: playback_controls_container.x + root.horizontal_padding, playback_controls_container.y
+
+            canvas:
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+                    source: 'atlas://images/demixer_theme/play_button'
+
+            on_touch_down: root.play(widget=args[0], touch=args[1])
+
+        ControlButton:
+            id: pause_button
+            size: root.button_width, root.button_height
+            pos: play_button.right + root.element_spacing, playback_controls_container.y
+
+            canvas:
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+                    source: 'atlas://images/demixer_theme/pause_button'
+
+            on_touch_down: root.pause(widget=args[0], touch=args[1])
+
+        ControlButton:
+            id: stop_button
+            size: root.button_width, root.button_height
+            pos: pause_button.right + root.element_spacing, playback_controls_container.y
+
+            canvas:
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+                    source: 'atlas://images/demixer_theme/stop_button'
+
+            on_touch_down: root.stop(widget=args[0], touch=args[1])
+
+    Container:
+        id: progressbar_container
+        height: root.height - root.vertical_padding * 2
+        width: root.right - self.x if root.right - self.x > seek_slider.min_width + seek_time.width + duration_time.width - root.horizontal_padding else self.x + seek_slider.min_width
+        pos: playback_controls_container.right, root.y + root.vertical_padding
+
+        Label:
+            id: seek_time
+            size_hint: None, None
+            width: root.label_width
+            height: progressbar_container.height
+            text: root.milliseconds_to_display(seek_slider.value)
+            pos: progressbar_container.pos
+
+        ModifiedSlider:
+            id: seek_slider
+            pos: seek_time.right + root.element_spacing / 2, progressbar_container.y
+            width: duration_time.x - self.x - root.element_spacing / 2
+            min_width: sp(300)
+            height: progressbar_container.height
+
+            max: root.duration
+            step: root.chunk_size
+            value: root.seek_time
+
+            canvas:
+                Color:
+                    rgb: 1, 1, 1
+                Rectangle:
+                    pos: self.x + self.padding, self.center_y - sp(2.5)
+                    size: self.width - self.padding * 2, sp(6)
+                    source: 'atlas://images/demixer_theme/progressbar_background'
+                Rectangle:
+                    pos: self.x + self.padding, self.center_y - sp(2.5)
+                    size: self.value_pos[0] - self.x, sp(6)
+                    source: 'atlas://images/demixer_theme/progressbar_progress'
+                Rectangle:
+                    pos: self.value_pos[0] - sp(10.5), self.center_y - sp(10.5)
+                    size: sp(21), sp(21)
+                    source: 'atlas://images/demixer_theme/progressbar_knob'
+
+            on_touch_down: root.handle_slider_touch(widget=self, touch=args[1], touch_state='down')
+            on_touch_up: root.handle_slider_touch(widget=self, touch=args[1], touch_state='up')
+
+        Label:
+            id: duration_time
+            size_hint: None, None
+            width: root.label_width
+            height: progressbar_container.height
+            text: root.milliseconds_to_display(seek_slider.max)
+            pos: progressbar_container.right - self.width - root.horizontal_padding, progressbar_container.y

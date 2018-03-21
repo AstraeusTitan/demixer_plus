@@ -1,0 +1,11 @@
+{"demixer_theme.png": 
+	{"play_button": [10, 10, 50, 50],
+	 "stop_button": [65, 10, 50, 50],
+	 "pause_button": [120, 10, 50, 50],
+	 "progressbar_knob": [175, 10, 50, 50],
+	 "progressbar_progress": [15, 82, 40, 15],
+	 "progressbar_background": [70, 82, 40, 15],
+	 "slice_indicator_start": [120, 65, 20, 50],
+	 "slice_indicator_end": [175, 65, 20, 50],
+	 "file_dialog_button": [230, 65, 50, 34],
+	 "blue_color_background": [65, 10, 50, 50]}}

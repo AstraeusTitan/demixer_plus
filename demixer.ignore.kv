@@ -1,0 +1,382 @@
+#: include audiocontrols.kv
+
+#: import AudioControls audio_controls.AudioControls
+
+#: set base_height 20
+
+<InputDialog>:
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+        FileChooserListView:
+            id: filechooser
+            filters: ['*.mp3', '*.wav']
+
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Button:
+                text: "Cancel"
+                on_release: root.cancel()
+
+            Button:
+                text: "Load"
+                on_release: root.load(filechooser.path, filechooser.selection)
+
+<ExportDialog>:
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+        FileChooserListView:
+            id: filechooser
+            dirselect: True
+            filters: ['*.dontshowfiles']
+
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Button:
+                text: "Cancel"
+                on_release: root.cancel()
+
+            Button:
+                text: "Select"
+                on_release: root.select(filechooser.path, filechooser.selection)
+
+<SliceControlSet>
+    size_hint: None, None
+    height: sp(30)
+    width: label.width + timestamp.width + button.width
+
+    Label:
+        id: label
+        size_hint: None, None
+        width: sp(100)
+        height: sp(base_height)
+        text: root.label_text
+        halign: 'right'
+        pos: root.x, root.center_y - self.height / 2
+
+    Label:
+        id: timestamp
+        size_hint: None, None
+        width: sp(100)
+        height: sp(base_height)
+        halign: 'left'
+        text_size: self.size
+        pos: label.right, label.center_y - self.height / 2
+        text: root.time_string
+
+        canvas:
+            Color:
+                rgba: 1, 1, 1, 1
+            Rectangle:
+                pos: self.pos
+                size: self.width, sp(4)
+                source: 'atlas://images/demixer_theme/progressbar_progress'
+
+    Label:
+        id: button
+        size: sp(30), sp(base_height)
+        pos: timestamp.right + sp(3), timestamp.y
+        text: 'Set'
+        text_size: self.size
+        halign: 'center'
+        valign: 'middle'
+        canvas.before:
+            Color:
+                rgba: 1, 1, 1, 1
+            Rectangle:
+                size: self.size
+                pos: self.pos
+                source: 'atlas://images/demixer_theme/blue_color_background'
+
+        on_touch_down: root.set_time(widget=self, touch=args[1])
+
+<SlicePreview>
+    size_hint: 1, None
+    height: sp(75)
+    name: str(input.text)
+
+    Label:
+        id: label
+        size_hint: None, None
+        height: sp(30)
+        width: sp(60)
+        pos: root.x + sp(20), root.top - self.height
+        text: 'Name: '
+        text_size: self.size
+        halign: 'right'
+        valign: 'middle'
+
+    TextInput:
+        id: input
+        text: 'Track Name'
+        size_hint: None, None
+        height: sp(30)
+        width: remove_button.x - sp(32) - label.right
+        pos: label.right, label.y
+        halign: 'left'
+        valign: 'middle'
+        text_size: self.size
+        multiline: False
+
+    Label:
+        id: remove_button
+        size_hint: None, None
+        size: sp(20), sp(20)
+        pos: root.right - self.width, root.top - self.height
+        text: 'X'
+        text_size: self.size
+        halign: 'center'
+        valign: 'middle'
+
+        canvas.before:
+            Color:
+                rgba: 1, 1, 1, 1
+            Rectangle:
+                size: self.size
+                pos: self.pos
+                source: 'atlas://images/demixer_theme/blue_color_background'
+
+        on_touch_down: root.remove_button(widget=self, touch=args[1])
+
+    AudioControls:
+        id: controls
+        width: root.width
+        pos: root.pos
+        audio_chunks: root.audio_chunks
+
+
+
+<MainWidget>:
+    canvas.before:
+        Color:
+            rgba: 1, 1, 1, .1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    Container:
+        id: input_select_container
+        height: sp(base_height)
+        width: sp(500)
+        x: root.center_x - self.width / 2
+        y: root.top - root.top_padding - self.height
+
+        Label:
+            id: input_label
+            size_hint_x: None
+            width: sp(50)
+            text: 'Input: '
+            text_size: self.size
+            halign: 'right'
+            pos: input_select_container.pos
+
+        Label:
+            id: input_audio_filename
+            size_hint_x: None
+            pos: input_label.right, input_select_container.y
+            width: show_input_dialog_button.x - self.x - sp(16)
+            text: root.input_audio_filename
+            text_size: self.size
+
+            canvas:
+                Color:
+                    rgba: 1, 1, 1, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.width, sp(4)
+                    source: 'atlas://images/demixer_theme/progressbar_progress'
+
+        ControlButton:
+            id: show_input_dialog_button
+            size: sp(20), sp(20)
+            x: input_select_container.right - self.width
+            center_y: input_select_container.center_y
+
+            canvas:
+                Color:
+                    rgba:  1, 1, 1, 1
+                Rectangle:
+                    pos: self.pos
+                    size: sp(15), sp(10)
+                    source: 'atlas://images/demixer_theme/file_dialog_button'
+
+            on_touch_down: root.show_dialog(widget=args[0], touch=args[1], dialog_to_display='input')
+
+    Container:
+        id: main_controls_container
+        width: root.width - root.side_padding * 2
+        height: sp(220)
+        pos: root.x + root.side_padding, input_select_container.y - self.height - sp(32)
+
+        Label:
+            id: audio_status_label
+            text: root.audio_status
+            text_size: self.size
+            halign: 'left'
+            size_hint: None, None
+            height: sp(base_height)
+            width: sp(300)
+            pos: main_controls_container.x + main_controls.horizontal_padding, main_controls_container.top - self.height
+
+        AudioControls:
+            id: main_controls
+            audio_chunks: root.audio_chunks
+            chunk_size: root.chunk_size
+            pos: main_controls_container.x, audio_status_label.y - self.height - sp(10)
+
+        SliceControlSet:
+            id: start_slice_controls
+            pos: root.center_x - self.width / 2 - sp(16), main_controls.y - self.height - sp(16)
+            time: main_controls.seek_time
+            label_text: 'Slice start: '
+
+        SliceControlSet:
+            id: end_slice_controls
+            pos: root.center_x - self.width / 2 - sp(16), start_slice_controls.y - self.height - sp(16)
+            time: main_controls.seek_time
+            label_text: 'Slice end: '
+
+        SliceIndicator:
+            id: slice_start_indicator
+            visible: start_slice_controls.slice_time_set
+            size_hint: None, None
+            size: sp(6), sp(14)
+            home_pos: main_controls.bar_start_x - self.width, main_controls.center_y - self.height - sp(10)
+            mark_pos: (main_controls.bar_end_x - main_controls.bar_start_x) * main_controls.value_pos_norm + main_controls.bar_start_x - self.width / 2, main_controls.center_y - self.height - sp(10)
+            image_path: 'atlas://images/demixer_theme/slice_indicator_start'
+
+        SliceIndicator:
+            id: slice_end_indicator
+            visible: end_slice_controls.slice_time_set
+            size_hint: None, None
+            size: sp(6), sp(14)
+            home_pos: main_controls.bar_end_x - self.width, main_controls.center_y - self.height - sp(10)
+            mark_pos: (main_controls.bar_end_x - main_controls.bar_start_x) * main_controls.value_pos_norm + main_controls.bar_start_x - self.width / 2, main_controls.center_y - self.height - sp(10)
+            image_path: 'atlas://images/demixer_theme/slice_indicator_end'
+
+        Label:
+            id: save_button
+            size_hint: None, None
+            size: sp(64), sp(base_height)
+            pos: main_controls_container.center_x - self.width / 2, end_slice_controls.y - self.height - sp(10)
+            text:'Save'
+            text_size: self.size
+            halign: 'center'
+
+            canvas.before:
+                Color:
+                    rgba: 1, 1, 1, 1
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+                    source: 'atlas://images/demixer_theme/blue_color_background'
+
+            on_touch_down: root.save_button(widget=self, touch=args[1], start=start_slice_controls.stored_time, end=end_slice_controls.stored_time)
+
+    SliceListDisplay:
+        grid: slice_list
+        id: slice_display
+        do_scroll_x: False
+        size_hint: None, None
+        width: root.width - root.side_padding * 2
+        height: main_controls_container.y - export_select_container.y - sp(10)
+        pos: root.x + root.side_padding, export_select_container.top + sp(10)
+
+        GridLayout:
+            id: slice_list
+            cols: 1
+            spacing: sp(0)
+            padding: sp(0)
+            size_hint_y: None
+            height: slice_list.height
+            pos: slice_list.pos
+
+    Container:
+        id: export_select_container
+        height: sp(base_height)
+        width: sp(500)
+        pos: root.center_x - self.width / 2, export_controls.top
+
+        Label:
+            id: export_label
+            size_hint_x: None
+            width: sp(75)
+            text: 'Export to: '
+            text_size: self.size
+            halign: 'right'
+            valign: 'middle'
+            pos: export_select_container.pos
+
+        Label:
+            id: export_dir_name
+            size_hint_x: None
+            pos: export_label.right, export_select_container.y
+            width: show_export_dialog_button.x - self.x - sp(16)
+            text: root.export_path
+            text_size: self.size
+
+            canvas:
+                Color:
+                    rgba: 1, 1, 1, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.width, sp(4)
+                    source: 'atlas://images/demixer_theme/progressbar_progress'
+
+        ControlButton:
+            id: show_export_dialog_button
+            size: sp(20), sp(20)
+            x: export_select_container.right - self.width
+            center_y: export_select_container.center_y
+
+            canvas:
+                Color:
+                    rgba:  1, 1, 1, 1
+                Rectangle:
+                    pos: self.pos
+                    size: sp(15), sp(10)
+                    source: 'atlas://images/demixer_theme/file_dialog_button'
+
+            on_touch_down: root.show_dialog(widget=args[0], touch=args[1], dialog_to_display='export')
+
+    Container:
+        id: export_controls
+        size_hint: None, None
+        width: root.width - root.side_padding * 2
+        height: sp(40)
+        pos: root.x + root.side_padding, root.y + root.bottom_padding
+
+        Label:
+            id: export_button
+            size_hint: None, None
+            size: sp(64), sp(base_height)
+            pos: export_controls.center_x - self.width / 2, export_controls.top - self.height
+            text: 'Export'
+            text_size: self.size
+            halign: 'center'
+            valign: 'middle'
+
+            canvas.before:
+                Color:
+                    rgba: 1, 1, 1, 1
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+                    source: 'atlas://images/demixer_theme/blue_color_background'
+
+            on_touch_down: root.export_button(widget=self, touch=args[1])
+
+        Label:
+            id: export_status_label
+            size_hint: 1, None
+            height: sp(base_height)
+            text: root.export_status
+            text_size: self.size
+            halign: 'center'
+            valign: 'middle'
+            pos: export_controls.pos

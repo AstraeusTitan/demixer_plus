@@ -1,0 +1,4 @@
+# Ignore ffmpeg program, used for audio encoding/decoding
+/ffmpeg/*
+# Ignore the build files
+/Demixer/*
